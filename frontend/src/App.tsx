@@ -2,7 +2,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useEffect } from "react";
 import { AppLayout } from "@/layouts/AppLayout";
-import { LoginPage } from "@/pages/LoginPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { TransactionsPage } from "@/pages/TransactionsPage";
 import { AccountsPage } from "@/pages/AccountsPage";
@@ -45,7 +44,13 @@ function Guard({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-  if (!profile) return <Navigate to="/login" replace />;
+  if (!profile) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-[var(--bg)] px-6 text-center">
+        <p className="text-sm text-ink-muted">Could not open the workspace. Refresh to try again.</p>
+      </div>
+    );
+  }
   return children;
 }
 
@@ -67,7 +72,6 @@ function Boot() {
   }, []);
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
       <Route
         path="/app"
         element={

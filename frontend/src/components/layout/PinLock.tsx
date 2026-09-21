@@ -8,7 +8,6 @@ export function PinLock() {
   const profile = useAuth((s) => s.profile);
   const locked = useUI((s) => s.locked);
   const setLocked = useUI((s) => s.setLocked);
-  const logout = useAuth((s) => s.logout);
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const timer = useRef<number | null>(null);
@@ -59,9 +58,6 @@ export function PinLock() {
       <Button className="mt-6 w-40" disabled={pin.length !== 4} onClick={submit}>
         Unlock
       </Button>
-      <button className="mt-6 text-sm text-ink-muted" onClick={() => logout()}>
-        Log out
-      </button>
     </div>
   );
 }

@@ -10,7 +10,6 @@ import { applyTheme, useUI } from "@/stores/ui";
 export function SettingsPage() {
   const profile = useAuth((s) => s.profile);
   const setProfile = useAuth((s) => s.setProfile);
-  const logout = useAuth((s) => s.logout);
   const setTheme = useUI((s) => s.setTheme);
   const toast = useUI((s) => s.toast);
   const qc = useQueryClient();
@@ -141,9 +140,6 @@ export function SettingsPage() {
         <h2 className="font-medium">About</h2>
         <p className="mt-2 text-sm text-ink-muted">MONEA is a private personal finance OS. It does not connect to banks or offer regulated advice.</p>
       </section>
-      <Button variant="danger" className="w-full" onClick={() => logout()}>
-        Log out
-      </Button>
       <ConfirmDialog
         open={restoreOpen}
         title="Restore backup?"

@@ -23,6 +23,10 @@ async function raw(path: string, options: Options = {}) {
       headers.set("Authorization", `Bearer ${localStorage.getItem(ACCESS)}`);
       return fetch(endpoint(path), { ...options, headers });
     }
+    localStorage.removeItem(ACCESS);
+    localStorage.removeItem(REFRESH);
+    headers.delete("Authorization");
+    return fetch(endpoint(path), { ...options, headers });
   }
   return response;
 }
