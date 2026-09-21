@@ -17,9 +17,9 @@ if os.getenv("VERCEL") and os.getenv("DATABASE_URL"):
 
         call_command("migrate", interactive=False, verbosity=0)
         if os.getenv("OWNER_PASSWORD"):
-            call_command("seed_demo", interactive=False, verbosity=0)
-    except Exception:
-        pass
+            call_command("seed_demo", verbosity=0)
+    except Exception as exc:
+        print(f"startup migrate/seed failed: {exc}", flush=True)
 
 
 def _original_path(environ) -> str:
