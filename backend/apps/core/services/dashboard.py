@@ -309,10 +309,21 @@ def build_dashboard(user, year: int | None = None, month: int | None = None) -> 
     net = compute_net_worth(user)
     sts = calculate_safe_to_spend(user, today)
     today_money = daily_allowance(user, today)
+    accounts = [
+        {
+            "id": account.id,
+            "name": account.name,
+            "balance": money(account.current_balance),
+            "color": account.color,
+            "account_type": account.account_type,
+            "is_liability": account.is_liability,
+        }
+        for account in Account.objects.filter(user=user, is_archived=False)
+    ]
 
     unread = Notification.objects.filter(user=user, is_read=False).count()
     profile = user.profile
-    display = profile.display_name or user.first_name or user.username
+    display = profile.display_name or user.get_full_name() or user.username
 
     return {
         "greeting": _greeting(now),
@@ -347,7 +358,10 @@ def build_dashboard(user, year: int | None = None, month: int | None = None) -> 
             }
             for goal in SavingsGoal.objects.filter(user=user, status=SavingsGoal.Status.ACTIVE)[:4]
         ],
+        "accounts": accounts,
         "net_worth": net["net_worth"],
+        "net_worth_assets": net["assets"],
+        "net_worth_liabilities": net["liabilities"],
         "unread_notifications": unread,
         "subscription_monthly": _subscription_monthly(user),
     }

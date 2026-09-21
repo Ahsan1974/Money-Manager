@@ -141,7 +141,13 @@ def register(request):
         return Response({"error": "Choose a username with at least 3 characters."}, status=400)
     if len(password) < 8:
         return Response({"error": "Use a password with at least 8 characters."}, status=400)
-    user = User.objects.create_user(username=username, password=password, first_name=display_name)
+    name_parts = display_name.split(" ", 1)
+    user = User.objects.create_user(
+        username=username,
+        password=password,
+        first_name=name_parts[0],
+        last_name=name_parts[1] if len(name_parts) > 1 else "",
+    )
     user.profile.display_name = display_name
     user.profile.save()
     refresh = RefreshToken.for_user(user)

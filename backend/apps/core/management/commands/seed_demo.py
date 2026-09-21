@@ -15,7 +15,7 @@ from apps.transactions.models import Transaction
 
 
 class Command(BaseCommand):
-    help = "Create or reset the personal workspace with no sample transactions."
+    help = "Create the personal workspace with no sample transactions."
 
     def add_arguments(self, parser):
         parser.add_argument("--username", default=os.getenv("OWNER_USERNAME", "ahsan"))
@@ -32,6 +32,10 @@ class Command(BaseCommand):
         last_name = parts[1] if len(parts) > 1 else ""
 
         user = User.objects.filter(username__in=[username, "demo", "ali"]).first()
+        if user is None and User.objects.exists() and not options["reset"]:
+            self.stdout.write("Workspace already has an owner. Skipping.")
+            return
+
         created = False
         if user is None:
             if not password:
@@ -44,22 +48,27 @@ class Command(BaseCommand):
                 email="ahsan@localhost",
             )
             created = True
-        else:
+        elif options["reset"]:
             user.username = username
             user.first_name = first_name
             user.last_name = last_name
             if password:
                 user.set_password(password)
             user.save()
+        else:
+            ensure_user_defaults(user)
+            self.stdout.write(self.style.SUCCESS(f"Owner {user.username} already exists. No data changed."))
+            return
 
         profile = user.profile
         profile.display_name = display_name
-        profile.emergency_reserve = 0
-        profile.savings_reserve = 0
+        if created or options["reset"]:
+            profile.emergency_reserve = 0
+            profile.savings_reserve = 0
         profile.save()
         ensure_user_defaults(user)
 
-        if options["reset"] or not created:
+        if options["reset"]:
             Transaction.objects.filter(user=user).delete()
             Transfer.objects.filter(user=user).delete()
             Account.objects.filter(user=user).delete()

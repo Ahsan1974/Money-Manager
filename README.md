@@ -122,7 +122,6 @@ Until `DATABASE_URL` is set, the API cannot store money records in production.
 
 - Live currency feeds (architecture is ready; rates are manual)
 - Tesseract-backed receipt OCR (`OCR_PROVIDER=tesseract` plus system Tesseract)
-- Cloud LLM via Groq when `AI_API_KEY` is set (answers are grounded in your database; the local engine is the fallback)
 - Platform WebAuthn biometrics beyond PIN + PWA standalone mode
 
 ## Privacy

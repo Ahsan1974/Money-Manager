@@ -16,18 +16,33 @@ if os.getenv("VERCEL") and os.getenv("DATABASE_URL"):
         from django.core.management import call_command
 
         call_command("migrate", interactive=False, verbosity=0)
+        if os.getenv("OWNER_PASSWORD"):
+            call_command("seed_demo", interactive=False, verbosity=0)
     except Exception:
         pass
 
 
+def _original_path(environ) -> str:
+    for key in (
+        "HTTP_X_INVOKE_PATH",
+        "HTTP_X_VERCEL_ORIGINAL_PATH",
+        "HTTP_X_FORWARDED_URI",
+        "HTTP_X_FORWARDED_PATH",
+        "REQUEST_URI",
+        "RAW_URI",
+        "PATH_INFO",
+    ):
+        raw = environ.get(key) or ""
+        path = raw.split("?", 1)[0]
+        if path.startswith("/api") or path.startswith("/admin") or path.startswith("/media"):
+            return path
+    fallback = (environ.get("PATH_INFO") or "/").split("?", 1)[0]
+    if fallback.startswith("/api"):
+        return fallback
+    return "/api" + (fallback if fallback.startswith("/") else "/" + fallback)
+
+
 def app(environ, start_response):
-    uri = environ.get("REQUEST_URI") or environ.get("RAW_URI") or ""
-    path = uri.split("?", 1)[0] if uri else environ.get("PATH_INFO", "")
-    forwarded = environ.get("HTTP_X_FORWARDED_URI") or environ.get("HTTP_X_INVOKE_PATH") or ""
-    if forwarded:
-        path = forwarded.split("?", 1)[0]
-    if path and not path.startswith("/api") and not path.startswith("/admin") and not path.startswith("/media"):
-        path = "/api" + (path if path.startswith("/") else "/" + path)
-    if path:
-        environ["PATH_INFO"] = path
+    environ["PATH_INFO"] = _original_path(environ)
+    environ["SCRIPT_NAME"] = ""
     return django_app(environ, start_response)

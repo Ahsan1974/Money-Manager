@@ -49,7 +49,7 @@ export function DashboardPage() {
         <div>
           <p className="text-sm text-ink-muted">{format(new Date(data.date), "EEEE d MMMM")}</p>
           <h1 className="mt-1 font-display text-3xl tracking-tight">
-            {data.greeting}, {data.display_name.split(" ")[0]}.
+            {data.greeting}, {data.display_name}.
           </h1>
         </div>
         <button
@@ -232,6 +232,10 @@ export function DashboardPage() {
         income={data.month_overview.income}
         expenses={data.month_overview.expenses}
         saved={data.month_overview.saved}
+        accounts={data.accounts || []}
+        safeToSpend={data.safe_to_spend}
+        assets={data.net_worth_assets || "0"}
+        liabilities={data.net_worth_liabilities || "0"}
         symbol={symbol}
       />
 

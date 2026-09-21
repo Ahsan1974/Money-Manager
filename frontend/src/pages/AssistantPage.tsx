@@ -36,7 +36,7 @@ export function AssistantPage() {
     <div className="flex min-h-[70vh] flex-col">
       <h1 className="font-display text-3xl">Assistant</h1>
       <p className="mt-1 text-sm text-ink-muted">
-        Answers come from your database. Numbers are never invented. Optional cloud models can be added via AI_API_KEY later.
+        Answers are grounded in your books. Groq is used when configured; the local engine is the fallback. Numbers are never invented.
       </p>
       <div className="mt-4 flex-1 space-y-3">
         {messages.map((msg, i) => (

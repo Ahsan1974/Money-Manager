@@ -102,7 +102,10 @@ export type Dashboard = {
     }[];
   };
   goals: { id: number; name: string; current_amount: string; target_amount: string; progress: string; color: string }[];
+  accounts: { id: number; name: string; balance: string; color: string; account_type: string; is_liability: boolean }[];
   net_worth: string;
+  net_worth_assets: string;
+  net_worth_liabilities: string;
   unread_notifications: number;
   subscription_monthly: string;
   insights: { id: string; tone: string; title: string; body: string }[];

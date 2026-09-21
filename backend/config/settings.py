@@ -86,7 +86,11 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-database_url = os.getenv("DATABASE_URL", "").strip()
+database_url = (
+    os.getenv("DATABASE_URL_UNPOOLED", "").strip()
+    or os.getenv("POSTGRES_URL_NON_POOLING", "").strip()
+    or os.getenv("DATABASE_URL", "").strip()
+)
 if database_url:
     DATABASES = {
         "default": dj_database_url.parse(
@@ -95,6 +99,7 @@ if database_url:
             ssl_require="sslmode" not in database_url,
         )
     }
+    DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
 else:
     sqlite_name = Path("/tmp/db.sqlite3") if os.getenv("VERCEL") else BASE_DIR / "db.sqlite3"
     DATABASES = {
