@@ -11,14 +11,26 @@ from django.core.wsgi import get_wsgi_application
 
 django_app = get_wsgi_application()
 
-if os.getenv("VERCEL") and os.getenv("DATABASE_URL"):
+_started = False
+
+
+def _ensure_schema():
+    global _started
+    if _started or not os.getenv("VERCEL") or not os.getenv("DATABASE_URL"):
+        return
+    _started = True
+    marker = Path("/tmp/monea-migrated")
+    if marker.exists():
+        return
     try:
         from django.core.management import call_command
 
         call_command("migrate", interactive=False, verbosity=0)
         if os.getenv("OWNER_PASSWORD"):
             call_command("seed_demo", verbosity=0)
+        marker.write_text("ok")
     except Exception as exc:
+        _started = False
         print(f"startup migrate/seed failed: {exc}", flush=True)
 
 
@@ -43,6 +55,7 @@ def _original_path(environ) -> str:
 
 
 def app(environ, start_response):
+    _ensure_schema()
     environ["PATH_INFO"] = _original_path(environ)
     environ["SCRIPT_NAME"] = ""
     return django_app(environ, start_response)

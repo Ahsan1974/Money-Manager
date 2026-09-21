@@ -20,10 +20,12 @@ export function AddSheet({
   const { data: accounts } = useQuery({
     queryKey: ["accounts"],
     queryFn: () => api<Account[] | { results: Account[] }>("/api/accounts/"),
+    enabled: open,
   });
   const { data: categories } = useQuery({
     queryKey: ["categories"],
     queryFn: () => api<Category[]>("/api/categories/"),
+    enabled: open,
   });
   const accountList = Array.isArray(accounts) ? accounts : accounts?.results || [];
   const [amount, setAmount] = useState("");

@@ -48,6 +48,5 @@ export function applyTheme(theme: "light" | "dark" | "system") {
   const dark =
     theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   document.documentElement.classList.toggle("dark", dark);
-  document.body.classList.toggle("bg-paper", !dark);
-  document.body.classList.toggle("dark:bg-[#0c0d0c]", true);
+  document.documentElement.style.colorScheme = dark ? "dark" : "light";
 }

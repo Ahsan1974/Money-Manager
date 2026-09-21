@@ -1,6 +1,6 @@
+import { Component, type ReactNode, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { useEffect } from "react";
 import { AppLayout } from "@/layouts/AppLayout";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { TransactionsPage } from "@/pages/TransactionsPage";
@@ -32,54 +32,56 @@ const client = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
 });
 
-function Guard({ children }: { children: React.ReactNode }) {
-  const { profile, loading, hydrate } = useAuth();
-  useEffect(() => {
-    hydrate();
-  }, [hydrate]);
-  if (loading) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-[var(--bg)]">
-        <p className="font-display text-3xl">MONEA</p>
-      </div>
-    );
+class ErrorBoundary extends Component<{ children: ReactNode }, { message: string | null }> {
+  state = { message: null as string | null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { message: error.message || "Something went wrong." };
   }
-  if (!profile) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-[var(--bg)] px-6 text-center">
-        <p className="text-sm text-ink-muted">Could not open the workspace. Refresh to try again.</p>
-      </div>
-    );
+
+  render() {
+    if (this.state.message) {
+      return (
+        <div className="flex min-h-dvh flex-col items-center justify-center bg-[var(--bg)] px-6 text-center text-[var(--ink)]">
+          <p className="font-display text-3xl">MONEA</p>
+          <p className="mt-3 text-sm text-ink-muted">{this.state.message}</p>
+          <button className="mt-4 underline" onClick={() => window.location.reload()}>
+            Reload
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
   }
-  return children;
 }
 
 function Boot() {
-  const profile = useAuth((s) => s.profile);
+  const { profile, hydrate } = useAuth();
   const setTheme = useUI((s) => s.setTheme);
   const setHide = useUI((s) => s.setHideBalance);
+
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
+
   useEffect(() => {
     const theme = profile?.theme || useUI.getState().theme;
     setTheme(theme);
     applyTheme(theme);
     if (profile) setHide(profile.hide_balance);
   }, [profile, setTheme, setHide]);
+
   useEffect(() => {
+    applyTheme(useUI.getState().theme);
     const onOnline = () => flushOfflineQueue();
     window.addEventListener("online", onOnline);
     if (navigator.onLine) flushOfflineQueue();
     return () => window.removeEventListener("online", onOnline);
   }, []);
+
   return (
     <Routes>
-      <Route
-        path="/app"
-        element={
-          <Guard>
-            <AppLayout />
-          </Guard>
-        }
-      >
+      <Route path="/app" element={<AppLayout />}>
         <Route index element={<DashboardPage />} />
         <Route path="transactions" element={<TransactionsPage />} />
         <Route path="accounts" element={<AccountsPage />} />
@@ -112,7 +114,9 @@ export default function App() {
   return (
     <QueryClientProvider client={client}>
       <BrowserRouter>
-        <Boot />
+        <ErrorBoundary>
+          <Boot />
+        </ErrorBoundary>
       </BrowserRouter>
     </QueryClientProvider>
   );

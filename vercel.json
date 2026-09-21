@@ -6,7 +6,7 @@
     { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/admin/(.*)", "destination": "/api" },
     { "source": "/media/(.*)", "destination": "/api" },
-    { "source": "/((?!api(?:/|$)|admin(?:/|$)|media(?:/|$)|assets/).*)", "destination": "/index.html" }
+    { "source": "/((?!api(?:/|$)|admin(?:/|$)|media(?:/|$)|assets/|sw\\.js|workbox-|manifest\\.webmanifest|favicon\\.svg|pwa-).*)", "destination": "/index.html" }
   ],
   "functions": {
     "api/index.py": {

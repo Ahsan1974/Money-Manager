@@ -52,14 +52,14 @@ async function tryRefresh() {
 
 export async function api<T>(path: string, options: Options = {}): Promise<T> {
   const response = await raw(path, options);
+  const data = await response.json().catch(() => null);
   if (response.status === 204) return undefined as T;
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const error = new Error(data.error || "Something went wrong. Please try again.") as Error & {
-      fields?: Record<string, string[]>;
-      status: number;
-    };
-    error.fields = data.fields;
+  if (!response.ok || data === null || typeof data !== "object") {
+    const error = new Error(
+      (data && typeof data === "object" && "error" in data && (data as { error?: string }).error) ||
+        "Something went wrong. Please try again.",
+    ) as Error & { fields?: Record<string, string[]>; status: number };
+    error.fields = data && typeof data === "object" ? (data as { fields?: Record<string, string[]> }).fields : undefined;
     error.status = response.status;
     throw error;
   }

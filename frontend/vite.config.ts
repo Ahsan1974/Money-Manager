@@ -27,11 +27,13 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
+        cleanupOutdatedCaches: true,
+        navigateFallbackDenylist: [/^\/api\//, /^\/admin\//, /^\/media\//],
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.startsWith("/api/"),
-            handler: "NetworkFirst",
-            options: { cacheName: "monea-api", networkTimeoutSeconds: 4 },
+            urlPattern: ({ url }) =>
+              url.pathname.startsWith("/api/") || url.pathname.startsWith("/admin/") || url.pathname.startsWith("/media/"),
+            handler: "NetworkOnly",
           },
         ],
       },

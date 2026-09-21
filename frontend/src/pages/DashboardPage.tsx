@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { api } from "@/api/client";
 import { DashboardCharts } from "@/charts/DashboardCharts";
+import { SpendingChart } from "@/charts/SpendingChart";
 import { MoneyCard, StatCard } from "@/components/money/MoneyCard";
 import { TransactionItem } from "@/components/money/TransactionItem";
 import { BudgetProgress, GoalProgress } from "@/components/money/Progress";
@@ -30,7 +31,7 @@ export function DashboardPage() {
   const symbol = data?.currency_symbol || profile?.currency_symbol || "Rs.";
 
   if (isLoading) return <DashboardSkeleton />;
-  if (isError || !data) {
+  if (isError || !data?.month_overview || !data.safe_to_spend) {
     return (
       <div className="py-16 text-center">
         <p>Something went wrong. Please try again.</p>
@@ -47,9 +48,11 @@ export function DashboardPage() {
     <div className="space-y-5">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-ink-muted">{format(new Date(data.date), "EEEE d MMMM")}</p>
+          <p className="text-sm text-ink-muted">
+            {data.date ? format(new Date(data.date), "EEEE d MMMM") : ""}
+          </p>
           <h1 className="mt-1 font-display text-3xl tracking-tight">
-            {data.greeting}, {data.display_name}.
+            {data.greeting}, {data.display_name || "Ahsan Nadeem"}.
           </h1>
         </div>
         <button
@@ -89,6 +92,7 @@ export function DashboardPage() {
         <StatCard label="Savings rate" value={`${data.month_overview.savings_rate}%`} />
       </div>
 
+      {data.today && (
       <div className="rounded-card border border-paper-line bg-paper-raised p-4 dark:border-[#2a2c2a] dark:bg-[#161816]">
         <p className="text-xs uppercase tracking-[0.16em] text-ink-muted">Today</p>
         <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
@@ -106,15 +110,18 @@ export function DashboardPage() {
           </div>
         </div>
       </div>
+      )}
 
-      <SpendingChart daily={data.spending_chart.daily} weekly={data.spending_chart.weekly} monthly={data.spending_chart.monthly} symbol={symbol} />
+      {data.spending_chart && (
+        <SpendingChart daily={data.spending_chart.daily} weekly={data.spending_chart.weekly} monthly={data.spending_chart.monthly} symbol={symbol} />
+      )}
 
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-medium">Where it went</h2>
         </div>
         <div className="space-y-2">
-          {data.categories.slice(0, 6).map((cat) => (
+          {(data.categories || []).slice(0, 6).map((cat) => (
             <button
               key={String(cat.id) + cat.name}
               className="flex w-full items-center gap-3"
@@ -129,11 +136,11 @@ export function DashboardPage() {
               </div>
             </button>
           ))}
-          {!data.categories.length && <p className="text-sm text-ink-muted">No spending this month yet.</p>}
+          {!data.categories?.length && <p className="text-sm text-ink-muted">No spending this month yet.</p>}
         </div>
       </section>
 
-      {!!data.upcoming_bills.length && (
+      {!!data.upcoming_bills?.length && (
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-medium">Coming up</h2>
@@ -174,7 +181,7 @@ export function DashboardPage() {
         </section>
       ) : null}
 
-      {!!data.goals.length && (
+      {!!data.goals?.length && (
         <section>
           <h2 className="mb-3 font-medium">Goals</h2>
           <div className="flex gap-3 overflow-x-auto no-scrollbar">
@@ -202,10 +209,10 @@ export function DashboardPage() {
             See all
           </button>
         </div>
-        {data.recent_transactions.map((tx) => (
+        {(data.recent_transactions || []).map((tx) => (
           <TransactionItem key={tx.id} tx={tx} symbol={symbol} onClick={() => navigate("/app/transactions")} />
         ))}
-        {!data.recent_transactions.length && (
+        {!data.recent_transactions?.length && (
           <p className="text-sm text-ink-muted">
             Add your first transaction to start understanding your spending.{" "}
             <button className="underline" onClick={() => setAddOpen(true)}>

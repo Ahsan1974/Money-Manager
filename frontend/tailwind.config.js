@@ -10,14 +10,14 @@ export default {
       },
       colors: {
         ink: {
-          DEFAULT: "#141413",
-          muted: "#6B675F",
-          faint: "#9A958C",
+          DEFAULT: "var(--ink)",
+          muted: "var(--muted)",
+          faint: "var(--muted)",
         },
         paper: {
-          DEFAULT: "#F3EFE8",
-          raised: "#FFFcf7",
-          line: "#E4DED4",
+          DEFAULT: "var(--bg)",
+          raised: "var(--raised)",
+          line: "var(--line)",
         },
         forest: {
           DEFAULT: "#1F6B4A",
