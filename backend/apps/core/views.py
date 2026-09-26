@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.db.models import Q
 from rest_framework import serializers, status, viewsets
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action, api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -25,7 +25,6 @@ from apps.core.services.calculators import (
 from apps.core.services.dashboard import build_dashboard, serialize_decimal
 from apps.core.services.insights import generate_insights
 from apps.core.services.nl import parse_natural_language
-from apps.core.services.recurring import generate_due_notifications, refresh_bill_statuses
 from apps.core.services.safe_to_spend import calculate_safe_to_spend
 from apps.goals.models import SavingsGoal
 from apps.transactions.models import Category, Transaction
@@ -118,6 +117,13 @@ class LoginSerializer(TokenObtainPairSerializer):
 class LoginView(TokenObtainPairView):
     permission_classes = [AllowAny]
     serializer_class = LoginSerializer
+
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def healthz(request):
+    return Response({"ok": True})
 
 
 @api_view(["GET"])
@@ -246,8 +252,6 @@ def dashboard(request):
     month = request.query_params.get("month")
     year_i = int(year) if year else None
     month_i = int(month) if month else None
-    refresh_bill_statuses(request.user)
-    generate_due_notifications(request.user)
     payload = build_dashboard(request.user, year_i, month_i)
     payload["insights"] = generate_insights(request.user)
     return Response(serialize_decimal(payload))

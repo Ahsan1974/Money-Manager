@@ -21,6 +21,7 @@ from apps.core.views import (
     dashboard,
     disable_pin,
     global_search,
+    healthz,
     insights_view,
     logout_view,
     me,
@@ -65,6 +66,7 @@ router.register("ai/conversations", ConversationViewSet, basename="ai-conversati
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/healthz/", healthz),
     path("api/auth/bootstrap/", bootstrap),
     path("api/auth/register/", register),
     path("api/auth/login/", LoginView.as_view()),

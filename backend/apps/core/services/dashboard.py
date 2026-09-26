@@ -12,7 +12,7 @@ from apps.budgets.models import Budget
 from apps.core.models import Notification
 from apps.core.services.ledger import month_bounds
 from apps.core.services.money import ZERO, money, percent, savings_rate
-from apps.core.services.networth import compute_net_worth, snapshot_net_worth
+from apps.core.services.networth import compute_net_worth
 from apps.core.services.safe_to_spend import calculate_safe_to_spend, daily_allowance
 from apps.goals.models import SavingsGoal
 from apps.transactions.models import Category, Transaction
@@ -305,7 +305,6 @@ def build_dashboard(user, year: int | None = None, month: int | None = None) -> 
         .select_related("account", "category")
         .order_by("-transaction_date", "-id")[:8]
     )
-    snapshot_net_worth(user, today)
     net = compute_net_worth(user)
     sts = calculate_safe_to_spend(user, today)
     today_money = daily_allowance(user, today)

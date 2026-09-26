@@ -1,36 +1,47 @@
-import { Component, type ReactNode, useEffect } from "react";
+import { Component, lazy, Suspense, type ReactNode, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "@/layouts/AppLayout";
 import { DashboardPage } from "@/pages/DashboardPage";
-import { TransactionsPage } from "@/pages/TransactionsPage";
-import { AccountsPage } from "@/pages/AccountsPage";
-import { AccountDetailPage } from "@/pages/AccountDetailPage";
-import { BudgetsPage } from "@/pages/BudgetsPage";
-import { GoalsPage } from "@/pages/GoalsPage";
-import { BillsPage } from "@/pages/BillsPage";
-import { SubscriptionsPage } from "@/pages/SubscriptionsPage";
-import { DebtsPage } from "@/pages/DebtsPage";
-import { LendingPage } from "@/pages/LendingPage";
-import { AnalyticsPage } from "@/pages/AnalyticsPage";
-import { YearlyPage } from "@/pages/YearlyPage";
-import { NetWorthPage } from "@/pages/NetWorthPage";
-import { InvestmentsPage } from "@/pages/InvestmentsPage";
-import { ReportsPage } from "@/pages/ReportsPage";
-import { ImportPage } from "@/pages/ImportPage";
-import { SettingsPage } from "@/pages/SettingsPage";
-import { MorePage } from "@/pages/MorePage";
-import { AssistantPage } from "@/pages/AssistantPage";
-import { CalculatorPage } from "@/pages/CalculatorPage";
-import { NotificationsPage } from "@/pages/NotificationsPage";
-import { CategoriesPage } from "@/pages/CategoriesPage";
 import { useAuth } from "@/stores/auth";
 import { applyTheme, useUI } from "@/stores/ui";
 import { flushOfflineQueue } from "@/api/client";
 
+const TransactionsPage = lazy(() => import("@/pages/TransactionsPage").then((m) => ({ default: m.TransactionsPage })));
+const AccountsPage = lazy(() => import("@/pages/AccountsPage").then((m) => ({ default: m.AccountsPage })));
+const AccountDetailPage = lazy(() => import("@/pages/AccountDetailPage").then((m) => ({ default: m.AccountDetailPage })));
+const BudgetsPage = lazy(() => import("@/pages/BudgetsPage").then((m) => ({ default: m.BudgetsPage })));
+const GoalsPage = lazy(() => import("@/pages/GoalsPage").then((m) => ({ default: m.GoalsPage })));
+const BillsPage = lazy(() => import("@/pages/BillsPage").then((m) => ({ default: m.BillsPage })));
+const SubscriptionsPage = lazy(() => import("@/pages/SubscriptionsPage").then((m) => ({ default: m.SubscriptionsPage })));
+const DebtsPage = lazy(() => import("@/pages/DebtsPage").then((m) => ({ default: m.DebtsPage })));
+const LendingPage = lazy(() => import("@/pages/LendingPage").then((m) => ({ default: m.LendingPage })));
+const AnalyticsPage = lazy(() => import("@/pages/AnalyticsPage").then((m) => ({ default: m.AnalyticsPage })));
+const YearlyPage = lazy(() => import("@/pages/YearlyPage").then((m) => ({ default: m.YearlyPage })));
+const NetWorthPage = lazy(() => import("@/pages/NetWorthPage").then((m) => ({ default: m.NetWorthPage })));
+const InvestmentsPage = lazy(() => import("@/pages/InvestmentsPage").then((m) => ({ default: m.InvestmentsPage })));
+const ReportsPage = lazy(() => import("@/pages/ReportsPage").then((m) => ({ default: m.ReportsPage })));
+const ImportPage = lazy(() => import("@/pages/ImportPage").then((m) => ({ default: m.ImportPage })));
+const SettingsPage = lazy(() => import("@/pages/SettingsPage").then((m) => ({ default: m.SettingsPage })));
+const MorePage = lazy(() => import("@/pages/MorePage").then((m) => ({ default: m.MorePage })));
+const AssistantPage = lazy(() => import("@/pages/AssistantPage").then((m) => ({ default: m.AssistantPage })));
+const CalculatorPage = lazy(() => import("@/pages/CalculatorPage").then((m) => ({ default: m.CalculatorPage })));
+const NotificationsPage = lazy(() => import("@/pages/NotificationsPage").then((m) => ({ default: m.NotificationsPage })));
+const CategoriesPage = lazy(() => import("@/pages/CategoriesPage").then((m) => ({ default: m.CategoriesPage })));
+
 const client = new QueryClient({
-  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
+  defaultOptions: {
+    queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 60_000 },
+  },
 });
+
+function PageFallback() {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center text-ink-muted">
+      Loading…
+    </div>
+  );
+}
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { message: string | null }> {
   state = { message: null as string | null };
@@ -80,33 +91,35 @@ function Boot() {
   }, []);
 
   return (
-    <Routes>
-      <Route path="/app" element={<AppLayout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="transactions" element={<TransactionsPage />} />
-        <Route path="accounts" element={<AccountsPage />} />
-        <Route path="accounts/:id" element={<AccountDetailPage />} />
-        <Route path="budgets" element={<BudgetsPage />} />
-        <Route path="goals" element={<GoalsPage />} />
-        <Route path="bills" element={<BillsPage />} />
-        <Route path="subscriptions" element={<SubscriptionsPage />} />
-        <Route path="debts" element={<DebtsPage />} />
-        <Route path="lending" element={<LendingPage />} />
-        <Route path="analytics" element={<AnalyticsPage />} />
-        <Route path="yearly" element={<YearlyPage />} />
-        <Route path="net-worth" element={<NetWorthPage />} />
-        <Route path="investments" element={<InvestmentsPage />} />
-        <Route path="reports" element={<ReportsPage />} />
-        <Route path="import" element={<ImportPage />} />
-        <Route path="settings" element={<SettingsPage />} />
-        <Route path="more" element={<MorePage />} />
-        <Route path="assistant" element={<AssistantPage />} />
-        <Route path="calculator" element={<CalculatorPage />} />
-        <Route path="notifications" element={<NotificationsPage />} />
-        <Route path="categories" element={<CategoriesPage />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/app" replace />} />
-    </Routes>
+    <Suspense fallback={<PageFallback />}>
+      <Routes>
+        <Route path="/app" element={<AppLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="transactions" element={<TransactionsPage />} />
+          <Route path="accounts" element={<AccountsPage />} />
+          <Route path="accounts/:id" element={<AccountDetailPage />} />
+          <Route path="budgets" element={<BudgetsPage />} />
+          <Route path="goals" element={<GoalsPage />} />
+          <Route path="bills" element={<BillsPage />} />
+          <Route path="subscriptions" element={<SubscriptionsPage />} />
+          <Route path="debts" element={<DebtsPage />} />
+          <Route path="lending" element={<LendingPage />} />
+          <Route path="analytics" element={<AnalyticsPage />} />
+          <Route path="yearly" element={<YearlyPage />} />
+          <Route path="net-worth" element={<NetWorthPage />} />
+          <Route path="investments" element={<InvestmentsPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="import" element={<ImportPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="more" element={<MorePage />} />
+          <Route path="assistant" element={<AssistantPage />} />
+          <Route path="calculator" element={<CalculatorPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="categories" element={<CategoriesPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/app" replace />} />
+      </Routes>
+    </Suspense>
   );
 }
 

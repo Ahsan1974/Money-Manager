@@ -21,6 +21,7 @@ export function DashboardPage() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["dashboard"],
     queryFn: () => api<Dashboard>("/api/dashboard/"),
+    staleTime: 30_000,
   });
   const profile = useAuth((s) => s.profile);
   const hide = useUI((s) => s.hideBalance);

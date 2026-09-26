@@ -8,21 +8,13 @@ from rest_framework.response import Response
 
 from apps.accounts.models import Account
 from apps.core.models import ImportSession
-from apps.reports.services import (
-    backup_payload,
-    build_pdf_report,
-    commit_import,
-    export_transactions_csv,
-    export_transactions_xlsx,
-    preview_import,
-    restore_backup,
-    start_import,
-)
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def import_upload(request):
+    from apps.reports.services import start_import
+
     uploaded = request.FILES.get("file")
     if not uploaded:
         return Response({"error": "Please choose a CSV or Excel file."}, status=400)
@@ -41,6 +33,8 @@ def import_upload(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def import_preview(request, pk: int):
+    from apps.reports.services import preview_import
+
     session = ImportSession.objects.filter(user=request.user, pk=pk).first()
     if not session:
         return Response({"error": "Import session not found."}, status=404)
@@ -56,6 +50,8 @@ def import_preview(request, pk: int):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def import_commit(request, pk: int):
+    from apps.reports.services import commit_import
+
     session = ImportSession.objects.filter(user=request.user, pk=pk).first()
     if not session:
         return Response({"error": "Import session not found."}, status=404)
@@ -71,6 +67,8 @@ def import_commit(request, pk: int):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def export_view(request):
+    from apps.reports.services import build_pdf_report, export_transactions_csv, export_transactions_xlsx
+
     fmt = request.query_params.get("format") or "csv"
     year = request.query_params.get("year")
     month = request.query_params.get("month")
@@ -87,6 +85,8 @@ def export_view(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def report_pdf(request):
+    from apps.reports.services import build_pdf_report
+
     today = timezone.localdate()
     year = int(request.query_params.get("year") or today.year)
     month = request.query_params.get("month")
@@ -97,6 +97,8 @@ def report_pdf(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def backup_view(request):
+    from apps.reports.services import backup_payload
+
     payload = backup_payload(request.user)
     response = HttpResponse(json.dumps(payload, default=str, indent=2), content_type="application/json")
     response["Content-Disposition"] = "attachment; filename=monea-backup.json"
@@ -106,6 +108,8 @@ def backup_view(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def restore_view(request):
+    from apps.reports.services import restore_backup
+
     if request.data.get("confirmation") != "RESTORE":
         return Response({"error": "Type RESTORE to confirm restoring a backup."}, status=400)
     payload = request.data.get("payload")

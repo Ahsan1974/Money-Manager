@@ -6,12 +6,6 @@ from io import BytesIO, StringIO
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
 from django.http import HttpResponse
-from openpyxl import Workbook, load_workbook
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-from reportlab.lib.units import mm
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from apps.accounts.models import Account, Investment, Transfer
 from apps.analytics.services import analytics_overview, yearly_review
@@ -51,6 +45,8 @@ def _guess_mapping(columns: list[str]) -> dict:
 def read_tabular(file_obj, name: str) -> list[dict]:
     name = (name or "").lower()
     if name.endswith(".xlsx") or name.endswith(".xls"):
+        from openpyxl import load_workbook
+
         wb = load_workbook(file_obj, read_only=True, data_only=True)
         sheet = wb.active
         rows = list(sheet.iter_rows(values_only=True))
@@ -207,6 +203,8 @@ def export_transactions_csv(user, year=None, month=None) -> HttpResponse:
 
 
 def export_transactions_xlsx(user, year=None, month=None) -> HttpResponse:
+    from openpyxl import Workbook
+
     qs = Transaction.objects.filter(user=user).select_related("account", "category").order_by("transaction_date")
     if year and month:
         start, end = month_bounds(year, month)
@@ -239,6 +237,12 @@ def export_transactions_xlsx(user, year=None, month=None) -> HttpResponse:
 
 
 def build_pdf_report(user, year: int, month: int | None = None) -> HttpResponse:
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.units import mm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
     if month:
         data = analytics_overview(user, year, month)
         title = date(year, month, 1).strftime("%B %Y") + " Report"

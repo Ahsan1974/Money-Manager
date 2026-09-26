@@ -3,13 +3,20 @@ import secrets
 
 from django.contrib.auth.models import User
 
-from apps.core.services.defaults import ensure_user_defaults
+_cached_owner = None
 
 
 def get_or_create_owner() -> User:
-    user = User.objects.order_by("pk").first()
+    global _cached_owner
+    if _cached_owner is not None:
+        return _cached_owner
+
+    user = User.objects.select_related("profile").order_by("pk").first()
     if user:
+        _cached_owner = user
         return user
+
+    from apps.core.services.defaults import ensure_user_defaults
 
     username = (os.getenv("OWNER_USERNAME") or "ahsan").strip()
     display_name = (os.getenv("OWNER_DISPLAY_NAME") or "Ahsan Nadeem").strip()
@@ -25,4 +32,5 @@ def get_or_create_owner() -> User:
     user.profile.display_name = display_name
     user.profile.save()
     ensure_user_defaults(user)
+    _cached_owner = user
     return user

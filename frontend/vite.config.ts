@@ -42,6 +42,18 @@ export default defineConfig({
   resolve: {
     alias: { "@": path.resolve(root, "src") },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom", "react-router-dom"],
+          query: ["@tanstack/react-query"],
+          charts: ["recharts"],
+          motion: ["framer-motion"],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {

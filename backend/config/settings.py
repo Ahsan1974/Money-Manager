@@ -87,15 +87,16 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 database_url = (
-    os.getenv("DATABASE_URL_UNPOOLED", "").strip()
+    os.getenv("DATABASE_URL", "").strip()
+    or os.getenv("POSTGRES_URL", "").strip()
+    or os.getenv("DATABASE_URL_UNPOOLED", "").strip()
     or os.getenv("POSTGRES_URL_NON_POOLING", "").strip()
-    or os.getenv("DATABASE_URL", "").strip()
 )
 if database_url:
     DATABASES = {
         "default": dj_database_url.parse(
             database_url,
-            conn_max_age=0 if os.getenv("VERCEL") else 600,
+            conn_max_age=60 if os.getenv("VERCEL") else 600,
             ssl_require="sslmode" not in database_url,
         )
     }

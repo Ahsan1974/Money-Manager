@@ -55,7 +55,9 @@ def _original_path(environ) -> str:
 
 
 def app(environ, start_response):
-    _ensure_schema()
-    environ["PATH_INFO"] = _original_path(environ)
+    path = _original_path(environ)
+    if not path.startswith("/api/healthz"):
+        _ensure_schema()
+    environ["PATH_INFO"] = path
     environ["SCRIPT_NAME"] = ""
     return django_app(environ, start_response)

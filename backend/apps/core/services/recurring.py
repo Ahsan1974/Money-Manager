@@ -30,18 +30,23 @@ def add_period(value: date, frequency: str) -> date:
 
 def refresh_bill_statuses(user, today: date | None = None):
     today = today or timezone.localdate()
+    changed = []
     for bill in Bill.objects.filter(user=user, is_active=True):
         if bill.status in {Bill.Status.PAID, Bill.Status.SKIPPED} and bill.frequency == "once":
             continue
         if bill.status == Bill.Status.PAID and bill.due_date >= today:
             continue
+        previous = bill.status
         if bill.due_date < today and bill.status != Bill.Status.PAID:
             bill.status = Bill.Status.OVERDUE
         elif 0 <= (bill.due_date - today).days <= 3 and bill.status != Bill.Status.PAID:
             bill.status = Bill.Status.DUE_SOON
         elif bill.status != Bill.Status.PAID:
             bill.status = Bill.Status.UPCOMING
-        bill.save(update_fields=["status", "updated_at"])
+        if bill.status != previous:
+            changed.append(bill)
+    if changed:
+        Bill.objects.bulk_update(changed, ["status"])
 
 
 def pay_bill(bill: Bill, paid_on: date | None = None, create_tx: bool = True) -> Bill:

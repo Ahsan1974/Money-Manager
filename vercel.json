@@ -2,6 +2,8 @@
   "buildCommand": "npm install --prefix frontend && npm run build --prefix frontend",
   "outputDirectory": "frontend/dist",
   "framework": null,
+  "regions": ["sin1"],
+  "crons": [{ "path": "/api/healthz/", "schedule": "*/5 * * * *" }],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/admin/(.*)", "destination": "/api" },
@@ -10,8 +12,7 @@
   ],
   "functions": {
     "api/index.py": {
-      "maxDuration": 30,
-      "memory": 1024,
+      "maxDuration": 15,
       "includeFiles": "backend/**"
     }
   }
