@@ -3,7 +3,6 @@
   "outputDirectory": "frontend/dist",
   "framework": null,
   "regions": ["sin1"],
-  "crons": [{ "path": "/api/healthz/", "schedule": "*/5 * * * *" }],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/admin/(.*)", "destination": "/api" },
